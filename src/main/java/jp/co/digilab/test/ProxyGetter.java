@@ -30,12 +30,12 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
 public class ProxyGetter {
 
 	private static final String TEST_SERVER_URL = "http://www.digilab.co.jp/";
-	private static final int TIMEOUT = 20 * 1000; // unit:ms
+	private static final int TIMEOUT = 30 * 1000; // unit:ms
 
 	public static final void main(String[] arguments) {
 		TreeMap<Long, String> resultMap = new TreeMap<>();
 		try {
-//			resultMap.putAll(fromXroxyCom());
+			resultMap.putAll(fromXroxyCom());
 			resultMap.putAll(fromAliveproxyCom());
 			System.out.println("result:");
 			System.out.println(resultMap);
@@ -144,7 +144,7 @@ public class ProxyGetter {
 						String country = tdList.item(index++).getTextContent();
 						String type = tdList.item(index++).getTextContent();
 						String ssl = tdList.item(index++).getTextContent();
-						System.out.printf("IP:%s, &port:%s, country:%s, type:%s, SSL:%s\n", ipAddress, port, country, type, ssl);
+						System.out.printf("IP:%s, port:%s, country:%s, type:%s, SSL:%s\n", ipAddress, port, country, type, ssl);
 
 						long elapsed = testProxy(ipAddress, port);
 						if (elapsed < Long.MAX_VALUE) {
