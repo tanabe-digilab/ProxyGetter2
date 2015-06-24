@@ -37,6 +37,7 @@ public class ProxyGetter {
 		try {
 			resultMap.putAll(fromXroxyCom());
 			resultMap.putAll(fromAliveproxyCom());
+			resultMap.putAll(fromProxyforestCom());
 			System.out.println("result:");
 			System.out.println(resultMap);
 		} catch (Exception e) {
@@ -152,6 +153,55 @@ public class ProxyGetter {
 							resultMap.put(elapsed, ipAddress + ":" + port);
 						}
 					}
+				}
+			}
+		}
+		return resultMap;
+	}
+
+	private static TreeMap<Long, String> fromProxyforestCom() throws IOException, SAXException, XPathException {
+		System.out.println("fromProxyforestCom()");
+		TreeMap<Long, String> resultMap = new TreeMap<>();
+		URL url = new URL("http://www.proxyforest.com/proxy.htm");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setConnectTimeout(TIMEOUT);
+		connection.setReadTimeout(TIMEOUT);
+		connection.setRequestMethod("GET");
+		connection.connect();
+		int status = connection.getResponseCode();
+		switch (status) {
+		case HttpURLConnection.HTTP_FORBIDDEN:
+		case HttpURLConnection.HTTP_UNAVAILABLE:
+			System.err.println(url + " ... status:" + status);
+			return resultMap;
+		}
+		try (InputStream is = connection.getInputStream()) {
+			try (InputStreamReader isr = new InputStreamReader(is, "UTF-8")) {
+				try (BufferedReader br = new BufferedReader(isr)) {
+					HtmlDocumentBuilder documentBuilder = new HtmlDocumentBuilder();
+					documentBuilder.setCheckingNormalization(true);
+					documentBuilder.setHtml4ModeCompatibleWithXhtml1Schemata(true);
+					documentBuilder.setScriptingEnabled(true);
+					Document document = documentBuilder.parse(new InputSource(br));
+
+					XPath xPath = Util.getXPathForXHTML();
+
+					NodeList tdList = (NodeList) xPath.evaluate("//h:table[@class='list']/h:tbody/h:tr/h:td", document, XPathConstants.NODESET);
+					if (tdList == null || tdList.getLength() != 8) {
+						System.err.println("trList == null || trList.getLength() != 8");
+						return resultMap;
+					}
+					int index = 1;
+					String ipPorts = tdList.item(index++).getTextContent();
+					String countries = tdList.item(index++).getTextContent();
+					String anonymouses = tdList.item(index++).getTextContent();
+					String times = tdList.item(index++).getTextContent();
+					String ranks = tdList.item(index++).getTextContent();
+					System.out.println("ipPorts: " + ipPorts);
+					System.out.println("countries: " + countries);
+					System.out.println("anonymouses: " + anonymouses);
+					System.out.println("times: " + times);
+					System.out.println("ranks: " + ranks);
 				}
 			}
 		}
